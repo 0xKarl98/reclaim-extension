@@ -147,6 +147,14 @@ var options = {
         generator: {
           filename: 'wasm/[name][ext]'
         },
+      },
+      // Support for Noir WASM files
+      {
+        test: /\.(wasm|wat)$/,
+        type: 'asset/resource',
+        generator: {
+          filename: 'noir/[name][ext]'
+        },
       }
     ],
   },

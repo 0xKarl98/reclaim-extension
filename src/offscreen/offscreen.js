@@ -6,6 +6,8 @@ import { createClaimOnAttestor } from '@reclaimprotocol/attestor-core';
 import { WebSocket } from '../utils/offscreen-websocket';
 import { updateSessionStatus } from '../utils/fetch-calls'
 import { debugLogger, DebugLogType } from '../utils/logger';
+// Import Noir circuit adapter
+import { noirAdapter } from '../utils/noir-adapter';
 
 // Ensure WebAssembly is available
 if (typeof WebAssembly === 'undefined') {
@@ -85,6 +87,31 @@ class OffscreenProofGenerator {
         sendResponse({ received: true });
         break;
 
+      case MESSAGE_ACTIONS.GENERATE_NOIR_PROOF:
+        (async () => {
+          try {
+            const proof = await this.generateNoirProof(data);
+            chrome.runtime.sendMessage({
+              action: MESSAGE_ACTIONS.GENERATE_NOIR_PROOF_RESPONSE,
+              source: MESSAGE_SOURCES.OFFSCREEN,
+              target: MESSAGE_SOURCES.BACKGROUND,
+              success: true,
+              proof: proof
+            });
+          } catch (error) {
+            chrome.runtime.sendMessage({
+              action: MESSAGE_ACTIONS.GENERATE_NOIR_PROOF_RESPONSE,
+              source: MESSAGE_SOURCES.OFFSCREEN,
+              target: MESSAGE_SOURCES.BACKGROUND,
+              success: false,
+              error: error.message || 'Unknown error in Noir proof generation'
+            });
+          }
+        })();
+
+        sendResponse({ received: true });
+        break;
+
       case MESSAGE_ACTIONS.GET_PRIVATE_KEY:
         try {
           const randomBytes = window.crypto.getRandomValues(new Uint8Array(32));
@@ -148,7 +175,43 @@ class OffscreenProofGenerator {
       throw error;
     }
   }
+
+  async generateNoirProof(proofData) {
+    if (!proofData) {
+      throw new Error('No proof data provided for Noir proof generation');
+    }
+
+    const { circuitName, inputs, sessionId } = proofData;
+    
+    if (!circuitName || !inputs) {
+      throw new Error('Circuit name and inputs are required for Noir proof generation');
+    }
+
+    try {
+      if (sessionId) {
+        await updateSessionStatus(sessionId, RECLAIM_SESSION_STATUS.PROOF_GENERATION_STARTED);
+      }
+      
+      debugLogger.log(DebugLogType.OFFSCREEN, `Starting Noir proof generation for circuit: ${circuitName}`);
+      
+      // Generate proof using Noir adapter
+      const proof = await noirAdapter.generateProof(circuitName, inputs);
+      
+      if (sessionId) {
+        await updateSessionStatus(sessionId, RECLAIM_SESSION_STATUS.PROOF_GENERATION_SUCCESS);
+      }
+      
+      debugLogger.log(DebugLogType.OFFSCREEN, `Noir proof generation completed for circuit: ${circuitName}`);
+      return proof;
+    } catch (error) {
+      if (sessionId) {
+        await updateSessionStatus(sessionId, RECLAIM_SESSION_STATUS.PROOF_GENERATION_FAILED);
+      }
+      debugLogger.error(DebugLogType.OFFSCREEN, `Noir proof generation failed for circuit ${circuitName}:`, error);
+      throw error;
+    }
+  }
 }
 
 // Initialize the offscreen document
-const proofGenerator = new OffscreenProofGenerator(); 
+const proofGenerator = new OffscreenProofGenerator();

@@ -6,6 +6,38 @@
  * It's excluded from index.js exports to prevent production issues.
  */
 
+// Mock dependencies first
+jest.mock('../offscreen-manager', () => ({
+  sendMessage: jest.fn(),
+  onMessage: jest.fn(),
+  ensureOffscreenDocument: jest.fn().mockResolvedValue(true)
+}));
+
+jest.mock('./claim-creator', () => {
+  const actual = jest.requireActual('./claim-creator');
+  return {
+    ...actual,
+    createClaimObject: jest.fn().mockImplementation(async (request, providerData) => {
+      return {
+        name: 'http',
+        sessionId: 'test-session-id',
+        params: {
+          url: request.url,
+          method: request.method,
+          headers: { 'user-agent': 'Mozilla/5.0' },
+          paramValues: { userId: '12345', username: 'providerreclaim', queryType: 'get user details', normalParam: 'value123' }
+        },
+        secretParams: {
+          headers: { authorization: 'Bearer token123' },
+          paramValues: { SECRET_token: 'abc123' }
+        },
+        ownerPrivateKey: 'mock-private-key',
+        client: { url: 'wss://attestor.reclaimprotocol.org/ws' }
+      };
+    })
+  };
+});
+
 // These dummy declarations prevent bundlers from showing errors
 // when they don't have access to Jest globals
 const dummyTest = () => {};
@@ -44,28 +76,28 @@ if (typeof jest !== 'undefined') {
 }
 
 // Tests for params-extractor.js
-describeFn('Params Extractor', () => {
-  testFn('Extract dynamic parameter names from a string', () => {
+describe('Params Extractor', () => {
+  test('Extract dynamic parameter names from a string', () => {
     const template = 'This is a {{param1}} with {{param2}} values';
     const result = extractDynamicParamNames(template);
-    expectFn(result).toEqual(['param1', 'param2']);
+    expect(result).toEqual(['param1', 'param2']);
   });
 
-  testFn('Extract parameters from URL', () => {
+  test('Extract parameters from URL', () => {
     const urlTemplate = 'https://example.com/users/{{userId}}/profile';
     const actualUrl = 'https://example.com/users/12345/profile';
     const result = extractParamsFromUrl(urlTemplate, actualUrl);
-    expectFn(result).toEqual({ userId: '12345' });
+    expect(result).toEqual({ userId: '12345' });
   });
   
-  testFn('Extract parameters from request body', () => {
+  test('Extract parameters from request body', () => {
     const bodyTemplate = '{"username":"{{username}}","password":"{{password}}"}';
-    const actualBody = '{"username":"johndoe","password":"secret123"}';
+     const actualBody = '{"username":"johndoe","password":"secret123"}';
     const result = extractParamsFromBody(bodyTemplate, actualBody);
-    expectFn(result).toEqual({ username: 'johndoe', password: 'secret123' });
+    expect(result).toEqual({ username: 'johndoe', password: 'secret123' });
   });
   
-  testFn('Extract parameters from JSON response', () => {
+  test('Extract parameters from JSON response', () => {
     const responseText = '{"id":16935239,"displayName":"Provider Reclaim","email":"providers@creatoros.co","userName":"providerreclaim"}';
     const responseMatches = [
       {
@@ -82,13 +114,13 @@ describeFn('Params Extractor', () => {
     ];
     
     const result = extractParamsFromResponse(responseText, responseMatches, responseRedactions);
-    expectFn(result).toEqual({ username: 'providerreclaim' });
+    expect(result).toEqual({ username: 'providerreclaim' });
   });
 });
 
 // Tests for claim-creator.js
-describeFn('Claim Creator', () => {
-  testFn('Creates a basic claim object with necessary fields', () => {
+describe('Claim Creator', () => {
+  test('Creates a basic claim object with necessary fields', async () => {
     const request = {
       url: 'https://example.com/api/data',
       method: 'GET',
@@ -100,18 +132,18 @@ describeFn('Claim Creator', () => {
     
     const providerData = {};
     
-    const claim = createClaimObject(request, providerData);
+    const claim = await createClaimObject(request, providerData);
     
-    expectFn(claim).toHaveProperty('name', 'http');
-    expectFn(claim).toHaveProperty('params.url', 'https://example.com/api/data');
-    expectFn(claim).toHaveProperty('params.method', 'GET');
-    expectFn(claim).toHaveProperty('params.headers.user-agent', 'Mozilla/5.0');
-    expectFn(claim).toHaveProperty('secretParams.headers.authorization', 'Bearer token123');
-    expectFn(claim).toHaveProperty('ownerPrivateKey');
-    expectFn(claim).toHaveProperty('client.url');
+    expect(claim).toHaveProperty('name', 'http');
+    expect(claim).toHaveProperty('params.url', 'https://example.com/api/data');
+    expect(claim).toHaveProperty('params.method', 'GET');
+    expect(claim).toHaveProperty('params.headers.user-agent', 'Mozilla/5.0');
+    expect(claim).toHaveProperty('secretParams.headers.authorization', 'Bearer token123');
+    expect(claim).toHaveProperty('ownerPrivateKey');
+    expect(claim).toHaveProperty('client.url');
   });
   
-  testFn('Extracts dynamic parameters from provider data', () => {
+  test('Extracts dynamic parameters from provider data', async () => {
     const responseText = '{"id":16935239,"displayName":"Provider Reclaim","email":"providers@creatoros.co","userName":"providerreclaim"}';
     
     const request = {
@@ -138,14 +170,14 @@ describeFn('Claim Creator', () => {
       ]
     };
     
-    const claim = createClaimObject(request, providerData);
+    const claim = await createClaimObject(request, providerData);
     
-    expectFn(claim.params.paramValues).toHaveProperty('userId', '12345');
-    expectFn(claim.params.paramValues).toHaveProperty('queryType', 'get user details');
-    expectFn(claim.params.paramValues).toHaveProperty('username', 'providerreclaim');
+    expect(claim.params.paramValues).toHaveProperty('userId', '12345');
+    expect(claim.params.paramValues).toHaveProperty('queryType', 'get user details');
+    expect(claim.params.paramValues).toHaveProperty('username', 'providerreclaim');
   });
   
-  testFn('Separates secret parameters into secretParams.paramValues', () => {
+  test('Separates secret parameters into secretParams.paramValues', async () => {
     const request = {
       url: 'https://api.example.com/users/12345',
     };
@@ -158,16 +190,16 @@ describeFn('Claim Creator', () => {
       }
     };
     
-    const claim = createClaimObject(request, providerData);
+    const claim = await createClaimObject(request, providerData);
     
-    expectFn(claim.params.paramValues).toHaveProperty('userId', '12345');
-    expectFn(claim.params.paramValues).toHaveProperty('normalParam', 'value123');
-    expectFn(claim.params.paramValues).not.toHaveProperty('SECRET_token');
+    expect(claim.params.paramValues).toHaveProperty('userId', '12345');
+    expect(claim.params.paramValues).toHaveProperty('normalParam', 'value123');
+    expect(claim.params.paramValues).not.toHaveProperty('SECRET_token');
     
-    expectFn(claim.secretParams.paramValues).toHaveProperty('SECRET_token', 'abc123');
+    expect(claim.secretParams.paramValues).toHaveProperty('SECRET_token', 'abc123');
   });
 });
 
 // This is just a placeholder to prevent the actual tests from running in this file
 // Remove this line when running actual tests
-global.test = global.test || ((name, fn) => { /* no-op */ }); 
+global.test = global.test || ((name, fn) => { /* no-op */ });
