@@ -19,7 +19,8 @@ The extension follows a modular architecture with three main layers:
 
 **Core Components Layer:**
 - **Network Filter**: Analyzes requests, extracts data, and processes responses
-- **Proof Generator**: Integrates with snarkjs for zero-knowledge proof creation
+- **Proof Generator**: Integrates with snarkjs and Noir circuits for zero-knowledge proof creation
+- **Noir Circuit Adapter**: Provides seamless integration with Noir zero-knowledge circuits
 - **Provider Handlers**: Custom JavaScript files (providerId.js) for provider-specific logic
 
 **Integration:**
@@ -45,17 +46,22 @@ The extension follows a modular architecture with three main layers:
    npm install
    ```
 
-3. **Development mode** (with hot reload):
+3. **Download and setup Noir circuits**:
+   ```bash
+   node download-circuits.js
+   ```
+
+4. **Development mode** (with hot reload):
    ```bash
    npm run dev
    ```
 
-4. **Production build**:
+5. **Production build**:
    ```bash
    npm run build
    ```
 
-5. **Load in browser**:
+6. **Load in browser**:
    - **Chrome**: Navigate to `chrome://extensions/` → Enable Developer Mode → Load Unpacked → Select `build/` folder
    - **Firefox**: Navigate to `about:debugging` → This Firefox → Load Temporary Add-on → Select any file in `build/`
 
@@ -251,7 +257,7 @@ class NetworkFilter {
 
 ### 2. Proof Generator (`src/utils/proofGenerator.js`)
 
-Handles zero-knowledge proof creation using snarkjs:
+Handles zero-knowledge proof creation using snarkjs and Noir circuits:
 
 ```javascript
 class ProofGenerator {
@@ -260,6 +266,77 @@ class ProofGenerator {
     // Add support for different proof systems
   }
 }
+```
+
+### 3. Noir Circuit Adapter (`src/utils/noir-adapter.js`)
+
+Provides seamless integration with Noir zero-knowledge circuits:
+
+```javascript
+import { noirAdapter } from './utils/noir-adapter';
+
+// Initialize a Noir circuit
+await noirAdapter.initializeCircuit('aes-gcm', circuitBytecode);
+
+// Generate proof using Noir
+const proof = await noirAdapter.generateProof('aes-gcm', {
+  encryptedData: new Uint8Array([...]),
+  key: new Uint8Array([...]),
+  iv: new Uint8Array([...]),
+  tag: new Uint8Array([...]),
+  expectedPlaintextHash: new Uint8Array([...])
+});
+
+// Verify proof
+const isValid = await noirAdapter.verifyProof('aes-gcm', proof.proof);
+```
+
+## 🔐 Noir Circuit Integration
+
+The extension now supports Noir zero-knowledge circuits for enhanced cryptographic proof generation. This integration provides:
+
+- **AES-GCM Decryption Verification**: Prove knowledge of encrypted data without revealing the plaintext
+- **Modular Circuit Architecture**: Easy integration of new Noir circuits
+- **Seamless API**: Unified interface for both snarkjs and Noir proof systems
+
+### Circuit Files
+
+Noir circuits are located in `src/circuits/noir/` and include:
+- `aes-gcm.json`: Circuit bytecode for AES-GCM decryption verification
+- Additional circuits can be added following the same pattern
+
+### Chrome Extension Integration
+
+The Noir circuits integrate seamlessly with the Chrome extension architecture:
+
+1. **Offscreen Document**: Noir proof generation runs in an offscreen document (`src/offscreen/offscreen.js`) to avoid blocking the main thread
+2. **Message Passing**: The extension uses Chrome's message passing API to communicate between content scripts, background scripts, and the offscreen document
+3. **Proof Generation Flow**:
+   ```
+   Content Script → Background Script → Offscreen Document → Noir Circuit → Proof
+   ```
+
+### Usage in Chrome Extension Context
+
+```javascript
+// In background script or content script
+chrome.runtime.sendMessage({
+  type: 'GENERATE_NOIR_PROOF',
+  circuitName: 'aes-gcm',
+  inputs: {
+    encryptedData: new Uint8Array([...]),
+    key: new Uint8Array([...]),
+    iv: new Uint8Array([...]),
+    tag: new Uint8Array([...]),
+    expectedPlaintextHash: new Uint8Array([...])
+  }
+}, (response) => {
+  if (response.success) {
+    console.log('Proof generated:', response.proof);
+  } else {
+    console.error('Proof generation failed:', response.error);
+  }
+});
 ```
 
 ### 3. Provider System (`src/providers/`)
@@ -330,6 +407,33 @@ npm run build
 npm run package
 ```
 
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+npm test
+```
+
+For coverage reports:
+
+```bash
+npm run test:coverage
+```
+
+### Testing Noir Circuits
+
+The test suite includes comprehensive tests for Noir circuit integration:
+
+- **Unit Tests**: Test individual circuit operations and adapter functions
+- **Integration Tests**: Verify end-to-end proof generation and verification
+- **Mock Environment**: Simulate Chrome extension environment for testing
+
+```bash
+# Run specific Noir adapter tests
+npm test -- noir-adapter.test.js
+```
+
 ### Browser-Specific Considerations
 
 The template includes polyfills for Node.js modules to ensure compatibility:
@@ -347,12 +451,110 @@ The template includes polyfills for Node.js modules to ensure compatibility:
 3. Test thoroughly across target browsers
 4. Submit to respective extension stores
 
+## 📚 API Reference
+
+### Core Classes
+
+#### `ProofGenerator`
+
+Handles zero-knowledge proof generation:
+
+```javascript
+const generator = new ProofGenerator();
+const proof = await generator.generateProof(data, config);
+```
+
+#### `NoirAdapter`
+
+Provides Noir circuit integration:
+
+```javascript
+import { noirAdapter } from './utils/noir-adapter';
+
+// Initialize circuit
+await noirAdapter.initializeCircuit('aes-gcm', circuitBytecode);
+
+// Generate proof
+const proof = await noirAdapter.generateProof('aes-gcm', inputs);
+
+// Verify proof
+const isValid = await noirAdapter.verifyProof('aes-gcm', proof.proof);
+
+// Get circuit info
+const info = noirAdapter.getCircuitInfo('aes-gcm');
+```
+
+### Message API for Chrome Extension
+
+#### Noir Proof Generation
+
+```javascript
+// Send message to generate Noir proof
+chrome.runtime.sendMessage({
+  type: 'GENERATE_NOIR_PROOF',
+  circuitName: 'aes-gcm',
+  inputs: {
+    encryptedData: Uint8Array,
+    key: Uint8Array,
+    iv: Uint8Array,
+    tag: Uint8Array,
+    expectedPlaintextHash: Uint8Array
+  }
+});
+
+// Response format
+{
+  success: boolean,
+  proof?: {
+    proof: Uint8Array,
+    publicInputs: Uint8Array[]
+  },
+  error?: string
+}
+```
+
 ## 🔒 Security & Privacy
 
 - **Zero-Knowledge Proofs**: Data verification without exposure
 - **Local Processing**: Sensitive operations happen locally
 - **Minimal Permissions**: Only essential browser permissions requested
 - **Secure Storage**: Encrypted local storage for sensitive data
+
+### Best Practices
+
+#### Security Guidelines
+
+1. **Data Handling**:
+   - Never store sensitive data in plain text
+   - Use secure random number generation for cryptographic operations
+   - Implement proper input validation and sanitization
+
+2. **Network Security**:
+   - Validate all network requests and responses
+   - Use HTTPS for all external communications
+   - Implement request rate limiting to prevent abuse
+
+3. **Extension Security**:
+   - Follow principle of least privilege for permissions
+   - Sanitize all DOM interactions in content scripts
+   - Use Content Security Policy (CSP) headers
+
+#### Performance Optimization
+
+1. **Proof Generation**:
+   - Use Web Workers for heavy cryptographic operations
+   - Implement proof caching for repeated operations
+   - Optimize circuit parameters for faster execution
+
+2. **Memory Management**:
+   - Clean up unused circuit instances
+   - Implement proper garbage collection for large data structures
+   - Monitor memory usage in background scripts
+
+3. **Network Optimization**:
+   - Batch network requests when possible
+   - Implement request deduplication
+   - Use efficient data serialization formats
 
 ## 🤝 Contributing to the Template
 
@@ -363,6 +565,29 @@ We welcome contributions that improve the template for all developers:
 3. Add comprehensive tests
 4. Update documentation
 5. Submit a pull request
+
+### Development Guidelines
+
+#### Code Style
+
+- Follow ESLint configuration provided in the template
+- Use TypeScript for type safety where applicable
+- Write comprehensive JSDoc comments for all public APIs
+- Follow consistent naming conventions across the codebase
+
+#### Testing Requirements
+
+- Write unit tests for all new functionality
+- Include integration tests for complex workflows
+- Test across multiple browser environments
+- Maintain minimum 80% code coverage
+
+#### Documentation Standards
+
+- Update README.md for any new features
+- Include inline code documentation
+- Provide usage examples for new APIs
+- Update architecture diagrams when needed
 
 ## 📚 Resources & Documentation
 
