@@ -21,11 +21,11 @@ Before using any Noir circuit, it must be initialized with the appropriate bytec
 import { noirAdapter } from '../utils/noir-adapter';
 
 // Load circuit bytecode (typically done during extension startup)
-const circuitBytecode = await fetch(chrome.runtime.getURL('circuits/noir/aes-gcm.json'))
+const circuitBytecode = await fetch(chrome.runtime.getURL('circuits/noir/aes_128_ctr.json'))
   .then(response => response.json());
 
 // Initialize the circuit
-await noirAdapter.initializeCircuit('aes-gcm', circuitBytecode);
+await noirAdapter.initializeCircuit('aes_128_ctr', circuitBytecode);
 ```
 
 ### 2. Extension Manifest Configuration
@@ -57,19 +57,18 @@ Ensure your `manifest.json` includes the necessary permissions and resources:
 // content-script.js
 // Trigger Noir proof generation from a content script
 
-function generateProofForEncryptedData(encryptedData, key, iv, tag, expectedHash) {
+function generateProofForEncryptedData(encryptedData, key, iv, expectedHash) {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage({
       action: 'GENERATE_NOIR_PROOF',
       source: 'CONTENT',
       target: 'BACKGROUND',
       data: {
-        circuitName: 'aes-gcm',
+        circuitName: 'aes_128_ctr',
         inputs: {
           encryptedData: Array.from(encryptedData),
           key: Array.from(key),
           iv: Array.from(iv),
-          tag: Array.from(tag),
           expectedPlaintextHash: Array.from(expectedHash)
         },
         sessionId: 'session-' + Date.now()
@@ -107,11 +106,10 @@ async function handleEncryptedResponse(responseData) {
     const encryptedData = new Uint8Array(responseData.encrypted);
     const key = new Uint8Array(responseData.key);
     const iv = new Uint8Array(responseData.iv);
-    const tag = new Uint8Array(responseData.tag);
     const expectedHash = new Uint8Array(responseData.expectedHash);
     
     const proof = await generateProofForEncryptedData(
-      encryptedData, key, iv, tag, expectedHash
+      encryptedData, key, iv, expectedHash
     );
     
     console.log('Proof generated successfully:', proof);
@@ -257,8 +255,8 @@ class NoirCircuitManager {
 ```javascript
 // utils/noir-input-validator.js
 class NoirInputValidator {
-  static validateAESGCMInputs(inputs) {
-    const required = ['encryptedData', 'key', 'iv', 'tag', 'expectedPlaintextHash'];
+  static validateAESCTRInputs(inputs) {
+    const required = ['encryptedData', 'key', 'iv', 'expectedPlaintextHash'];
     const errors = [];
     
     for (const field of required) {
@@ -275,18 +273,13 @@ class NoirInputValidator {
       // Validate specific field lengths
       switch (field) {
         case 'key':
-          if (inputs[field].length !== 32) {
-            errors.push('AES key must be 32 bytes (256 bits)');
+          if (inputs[field].length !== 16) {
+            errors.push('AES-128 key must be 16 bytes');
           }
           break;
         case 'iv':
-          if (inputs[field].length !== 12) {
-            errors.push('GCM IV must be 12 bytes');
-          }
-          break;
-        case 'tag':
           if (inputs[field].length !== 16) {
-            errors.push('GCM tag must be 16 bytes');
+            errors.push('CTR IV must be 16 bytes');
           }
           break;
         case 'expectedPlaintextHash':
@@ -485,9 +478,8 @@ describe('Noir Circuit Integration', () => {
 
   const validInputs = {
     encryptedData: new Uint8Array(64).fill(1),
-    key: new Uint8Array(32).fill(2),
-    iv: new Uint8Array(12).fill(3),
-    tag: new Uint8Array(16).fill(4),
+    key: new Uint8Array(16).fill(2),
+    iv: new Uint8Array(16).fill(3),
     expectedPlaintextHash: new Uint8Array(32).fill(5)
   };
 
@@ -506,16 +498,16 @@ describe('Noir Circuit Integration', () => {
 
   test('should validate inputs correctly', () => {
     expect(() => {
-      NoirInputValidator.validateAESGCMInputs(validInputs);
+      NoirInputValidator.validateAESCTRInputs(validInputs);
     }).not.toThrow();
   });
 
   test('should reject invalid inputs', () => {
-    const invalidInputs = { ...validInputs, key: new Uint8Array(16) }; // Wrong key length
+    const invalidInputs = { ...validInputs, key: new Uint8Array(32) }; // Wrong key length
     
     expect(() => {
-      NoirInputValidator.validateAESGCMInputs(invalidInputs);
-    }).toThrow('AES key must be 32 bytes');
+      NoirInputValidator.validateAESCTRInputs(invalidInputs);
+    }).toThrow('AES-128 key must be 16 bytes');
   });
 
   test('should generate proof with valid inputs', async () => {
@@ -570,12 +562,11 @@ describe('Chrome Extension Noir Integration', () => {
       source: MESSAGE_SOURCES.BACKGROUND,
       target: MESSAGE_SOURCES.OFFSCREEN,
       data: {
-        circuitName: 'aes-gcm',
+        circuitName: 'aes_128_ctr',
         inputs: {
           encryptedData: Array.from(new Uint8Array(64).fill(1)),
-          key: Array.from(new Uint8Array(32).fill(2)),
-          iv: Array.from(new Uint8Array(12).fill(3)),
-          tag: Array.from(new Uint8Array(16).fill(4)),
+          key: Array.from(new Uint8Array(16).fill(2)),
+          iv: Array.from(new Uint8Array(16).fill(3)),
           expectedPlaintextHash: Array.from(new Uint8Array(32).fill(5))
         }
       }

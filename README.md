@@ -302,7 +302,9 @@ The extension now supports Noir zero-knowledge circuits for enhanced cryptograph
 ### Circuit Files
 
 Noir circuits are located in `src/circuits/noir/` and include:
-- `aes-gcm.json`: Circuit bytecode for AES-GCM decryption verification
+- `aes_128_ctr.json`: Circuit bytecode for AES-128-CTR decryption verification
+- `aes_256_ctr.json`: Circuit bytecode for AES-256-CTR decryption verification
+- `chacha20.json`: Circuit bytecode for ChaCha20 decryption verification
 - Additional circuits can be added following the same pattern
 
 ### Chrome Extension Integration
@@ -322,12 +324,11 @@ The Noir circuits integrate seamlessly with the Chrome extension architecture:
 // In background script or content script
 chrome.runtime.sendMessage({
   type: 'GENERATE_NOIR_PROOF',
-  circuitName: 'aes-gcm',
+  circuitName: 'aes_128_ctr',
   inputs: {
     encryptedData: new Uint8Array([...]),
     key: new Uint8Array([...]),
     iv: new Uint8Array([...]),
-    tag: new Uint8Array([...]),
     expectedPlaintextHash: new Uint8Array([...])
   }
 }, (response) => {
@@ -472,16 +473,16 @@ Provides Noir circuit integration:
 import { noirAdapter } from './utils/noir-adapter';
 
 // Initialize circuit
-await noirAdapter.initializeCircuit('aes-gcm', circuitBytecode);
+await noirAdapter.initializeCircuit('aes_128_ctr', circuitBytecode);
 
 // Generate proof
-const proof = await noirAdapter.generateProof('aes-gcm', inputs);
+const proof = await noirAdapter.generateProof('aes_128_ctr', inputs);
 
 // Verify proof
-const isValid = await noirAdapter.verifyProof('aes-gcm', proof.proof);
+const isValid = await noirAdapter.verifyProof('aes_128_ctr', proof.proof);
 
 // Get circuit info
-const info = noirAdapter.getCircuitInfo('aes-gcm');
+const info = noirAdapter.getCircuitInfo('aes_128_ctr');
 ```
 
 ### Message API for Chrome Extension
@@ -492,12 +493,11 @@ const info = noirAdapter.getCircuitInfo('aes-gcm');
 // Send message to generate Noir proof
 chrome.runtime.sendMessage({
   type: 'GENERATE_NOIR_PROOF',
-  circuitName: 'aes-gcm',
+  circuitName: 'aes_128_ctr',
   inputs: {
     encryptedData: Uint8Array,
     key: Uint8Array,
     iv: Uint8Array,
-    tag: Uint8Array,
     expectedPlaintextHash: Uint8Array
   }
 });
