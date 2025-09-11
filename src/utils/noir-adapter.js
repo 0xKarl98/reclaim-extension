@@ -1,30 +1,71 @@
-// Noir Circuit Adapter for Reclaim Extension
-// Provides compatibility layer between Noir circuits and existing proof generation interface
+// Noir circuit adapter for zk-symmetric-crypto integration
+// Uses barretenberg operator for proof generation and verification
 
-import { Noir } from '@noir-lang/noir_js';
-import { BarretenbergBackend } from '@noir-lang/backend_barretenberg';
-import { debugLogger, DebugLogType } from './logger';
+import fs from 'fs';
+
+import { debugLogger, DebugLogType } from './logger/debugLogger.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { generateProof as pkgGenerateProof, verifyProof as pkgVerifyProof, makeSnarkJsZKOperator } from 'zk-symmetric-crypto-test';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 class NoirCircuitAdapter {
   constructor() {
     this.circuits = new Map();
     this.backends = new Map();
+    this.operators = new Map();
+    this.circuitPath = path.join(__dirname, '../circuits/compiled');
   }
 
   /**
-   * Initialize a Noir circuit
-   * @param {string} circuitName - Name of the circuit
-   * @param {Uint8Array} circuitBytecode - Compiled circuit bytecode
+   * Initialize a Noir circuit from compiled JSON file
+   * @param {string} circuitName - Name of the circuit (algorithm name like 'aes-128-ctr')
+   * @returns {Promise<void>}
    */
-  async initializeCircuit(circuitName, circuitBytecode) {
+  async initializeCircuit(circuitName) {
     try {
       debugLogger.log(DebugLogType.OFFSCREEN, `Initializing Noir circuit: ${circuitName}`);
       
-      const backend = new BarretenbergBackend(circuitBytecode);
-      const noir = new Noir(circuitBytecode, backend);
+      // Map algorithm name to file name
+      const fileNameMap = {
+        'aes-128-ctr': 'aes_128_ctr.json',
+        'aes-256-ctr': 'aes_256_ctr.json',
+        'chacha20': 'chacha20.json'
+      };
       
-      this.circuits.set(circuitName, noir);
-      this.backends.set(circuitName, backend);
+      const fileName = fileNameMap[circuitName];
+      if (!fileName) {
+        throw new Error(`Unknown circuit algorithm: ${circuitName}`);
+      }
+      
+      // Load circuit from compiled JSON file
+      const circuitFile = path.join(this.circuitPath, fileName);
+      if (!fs.existsSync(circuitFile)) {
+        throw new Error(`Circuit file not found: ${circuitFile}`);
+      }
+      
+      const circuitData = JSON.parse(fs.readFileSync(circuitFile, 'utf8'));
+      this.circuits.set(circuitName, circuitData);
+      
+      // Create operator with file fetcher
+      const fetcher = {
+        fetch: async (backend, filename, logger) => {
+          // Map to correct resource path
+          const resourcePath = path.join(__dirname, '../../public/browser-rpc/resources', backend, filename);
+          return fs.readFileSync(resourcePath);
+        }
+      };
+      
+      const operator = makeSnarkJsZKOperator({
+        algorithm: circuitName,
+        fetcher,
+        options: { threads: 1 }
+      });
+      
+      this.operators.set(circuitName, operator);
       
       debugLogger.log(DebugLogType.OFFSCREEN, `Circuit ${circuitName} initialized successfully`);
       return true;
@@ -42,26 +83,35 @@ class NoirCircuitAdapter {
    */
   async generateProof(circuitName, inputs) {
     try {
-      const noir = this.circuits.get(circuitName);
-      if (!noir) {
+      const operator = this.operators.get(circuitName);
+      if (!operator) {
         throw new Error(`Circuit ${circuitName} not initialized`);
       }
 
       debugLogger.log(DebugLogType.OFFSCREEN, `Generating proof for circuit: ${circuitName}`);
+      const algorithm = circuitName;
+      // Extract nonce (first 12 bytes) and counter (last 4 bytes) from inputs.counter
+      const counterArray = inputs.counter;
+      const nonce = new Uint8Array(counterArray.slice(0, 12));
+      const counterValue = (counterArray[12] << 24) | (counterArray[13] << 16) | (counterArray[14] << 8) | counterArray[15];
       
-      // Generate witness
-      const { witness } = await noir.execute(inputs);
-      
-      // Generate proof
-      const backend = this.backends.get(circuitName);
-      const proof = await backend.generateProof(witness);
-      
-      debugLogger.log(DebugLogType.OFFSCREEN, `Proof generated successfully for circuit: ${circuitName}`);
-      
-      // Return proof in format compatible with existing interface
+      const privateInput = {
+        key: new Uint8Array(inputs.key)
+      };
+      const publicInput = { 
+        ciphertext: new Uint8Array(inputs.expected_ciphertext),
+        iv: nonce,
+        offsetBytes: 0
+      };
+      const {algorithm: resultAlgorithm, proofData, plaintext} = await pkgGenerateProof({
+        algorithm,
+        privateInput,
+        publicInput,
+        operator
+      });
       return {
-        proof: Array.from(proof),
-        publicSignals: [], // Noir handles public inputs differently
+        proof: proofData,
+        publicSignals: plaintext,
         circuitType: 'noir',
         circuitName: circuitName,
         timestamp: Date.now()
@@ -79,19 +129,26 @@ class NoirCircuitAdapter {
    * @param {Array} publicInputs - Public inputs
    * @returns {boolean} Verification result
    */
-  async verifyProof(circuitName, proof, publicInputs = []) {
+  async verifyProof(circuitName, proof, publicSignals, publicInput) {
     try {
-      const backend = this.backends.get(circuitName);
-      if (!backend) {
+      const operator = this.operators.get(circuitName);
+      if (!operator) {
         throw new Error(`Circuit ${circuitName} not initialized`);
       }
-
       debugLogger.log(DebugLogType.OFFSCREEN, `Verifying proof for circuit: ${circuitName}`);
-      
-      const isValid = await backend.verifyProof({ proof, publicInputs });
-      
-      debugLogger.log(DebugLogType.OFFSCREEN, `Proof verification result for ${circuitName}: ${isValid}`);
-      return isValid;
+      const algorithm = circuitName;
+      await pkgVerifyProof({
+        proof: {
+          proofData: proof,
+          plaintext: publicSignals,
+          algorithm
+        },
+        publicInput,
+        operator
+      });
+      // pkgVerifyProof doesn't return a value, it throws on failure
+      debugLogger.log(DebugLogType.OFFSCREEN, `Proof verification result for ${circuitName}: true`);
+      return true;
     } catch (error) {
       debugLogger.error(DebugLogType.OFFSCREEN, `Failed to verify proof for circuit ${circuitName}:`, error);
       return false;
@@ -104,8 +161,8 @@ class NoirCircuitAdapter {
    * @returns {Object} Circuit information
    */
   getCircuitInfo(circuitName) {
-    const noir = this.circuits.get(circuitName);
-    if (!noir) {
+    const operator = this.operators.get(circuitName);
+    if (!operator) {
       return null;
     }
 
@@ -113,7 +170,7 @@ class NoirCircuitAdapter {
       name: circuitName,
       type: 'noir',
       initialized: true,
-      backend: 'barretenberg'
+      backend: 'ultrahonk'
     };
   }
 
@@ -122,7 +179,7 @@ class NoirCircuitAdapter {
    * @returns {Array} List of circuit names
    */
   listCircuits() {
-    return Array.from(this.circuits.keys());
+    return Array.from(this.operators.keys());
   }
 
   /**
@@ -131,11 +188,7 @@ class NoirCircuitAdapter {
    */
   async cleanup(circuitName) {
     try {
-      const backend = this.backends.get(circuitName);
-      if (backend && typeof backend.destroy === 'function') {
-        await backend.destroy();
-      }
-      
+      this.operators.delete(circuitName);
       this.circuits.delete(circuitName);
       this.backends.delete(circuitName);
       
@@ -154,8 +207,20 @@ class NoirCircuitAdapter {
       await this.cleanup(name);
     }
   }
+
+  /**
+   * Get available circuit types
+   * @returns {Array} List of available circuit types
+   */
+  getAvailableCircuits() {
+    const circuitFiles = fs.readdirSync(this.circuitPath)
+      .filter(file => file.endsWith('.json'))
+      .map(file => file.replace('.json', ''));
+    return circuitFiles;
+  }
 }
 
 // Export singleton instance
 export const noirAdapter = new NoirCircuitAdapter();
 export default NoirCircuitAdapter;
+export { NoirCircuitAdapter };

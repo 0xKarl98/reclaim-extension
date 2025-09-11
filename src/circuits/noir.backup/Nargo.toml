@@ -1,0 +1,8 @@
+[package]
+name = "reclaim_noir_circuits"
+type = "bin"
+authors = [""]
+compiler_version = ">=0.32.0"
+
+[dependencies]
+std = { tag = "v0.32.0", git = "https://github.com/noir-lang/noir", directory = "noir_stdlib" }
