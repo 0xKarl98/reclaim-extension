@@ -90,10 +90,20 @@ class NoirCircuitAdapter {
 
       debugLogger.log(DebugLogType.OFFSCREEN, `Generating proof for circuit: ${circuitName}`);
       const algorithm = circuitName;
-      // Extract nonce (first 12 bytes) and counter (last 4 bytes) from inputs.counter
-      const counterArray = inputs.counter;
-      const nonce = new Uint8Array(counterArray.slice(0, 12));
-      const counterValue = (counterArray[12] << 24) | (counterArray[13] << 16) | (counterArray[14] << 8) | counterArray[15];
+      
+      let nonce, counterValue;
+      
+      if (circuitName === 'chacha20') {
+        // ChaCha20 has separate nonce and counter inputs
+        nonce = new Uint8Array(inputs.nonce);
+        counterValue = inputs.counter;
+      } else {
+        // AES algorithms use combined counter array
+        // Extract nonce (first 12 bytes) and counter (last 4 bytes) from inputs.counter
+        const counterArray = inputs.counter;
+        nonce = new Uint8Array(counterArray.slice(0, 12));
+        counterValue = (counterArray[12] << 24) | (counterArray[13] << 16) | (counterArray[14] << 8) | counterArray[15];
+      }
       
       const privateInput = {
         key: new Uint8Array(inputs.key)
