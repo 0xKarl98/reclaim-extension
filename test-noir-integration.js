@@ -1,8 +1,5 @@
-// Test script for Noir circuit integration
-// Tests the new zk-symmetric-crypto barretenberg operator integration
-
 import { NoirCircuitAdapter } from './src/utils/noir-adapter.js';
-import { debugLogger, DebugLogType } from './src/utils/logger/debugLogger.js';
+import JSChaCha20 from 'js-chacha20';
 
 async function testNoirIntegration() {
   console.log('Starting Noir integration test...');
@@ -21,9 +18,17 @@ async function testNoirIntegration() {
     
     console.log('All tests completed successfully!');
     
+    // Clean up all circuits to allow process to exit
+    await adapter.cleanupAll();
+    console.log('Cleanup completed, exiting...');
+    
+    // Force exit the process as some async resources may not be cleaned up properly
+    process.exit(0);
+    
   } catch (error) {
     console.error('Test failed:', error);
     console.error('Stack trace:', error.stack);
+    process.exit(1);
   }
 }
 
@@ -201,17 +206,29 @@ async function testChaCha20(adapter) {
   const nonceHex = "000000090000004a00000000";
   const counter = 1;
   
-  // Calculate expected ciphertext using a ChaCha20 implementation
-  // For now, we'll use a mock ciphertext since we don't have ChaCha20 in Node.js crypto
+  // Calculate expected ciphertext using real ChaCha20 implementation
   const plaintextBytes = hexToBytes(plaintextHex);
-  const mockCiphertext = plaintextBytes.map((byte, i) => byte ^ (i % 256)); // Simple XOR for testing
+  const keyBytes = hexToBytes(keyHex);
+  const nonceBytes = hexToBytes(nonceHex);
+  
+  // Convert to Uint8Array for js-chacha20 library
+  const keyUint8 = new Uint8Array(keyBytes);
+  const nonceUint8 = new Uint8Array(nonceBytes);
+  const plaintextUint8 = new Uint8Array(plaintextBytes);
+  
+  console.log('Key length:', keyUint8.length, 'bytes');
+  console.log('Nonce length:', nonceUint8.length, 'bytes');
+  
+  // Use js-chacha20 to generate real ciphertext
+  const chacha20 = new JSChaCha20(keyUint8, nonceUint8, counter);
+  const realCiphertext = chacha20.encrypt(plaintextUint8);
   
   const sampleInputs = {
     key: hexToBytes(keyHex),
     plaintext: plaintextBytes,
     nonce: hexToBytes(nonceHex),
     counter: counter,
-    expected_ciphertext: mockCiphertext
+    expected_ciphertext: Array.from(realCiphertext)
   };
 
   console.log('Generating proof with sample inputs...');
@@ -224,7 +241,7 @@ async function testChaCha20(adapter) {
   
   // Construct publicInput similar to AES algorithms
   const publicInput = { 
-      ciphertext: new Uint8Array(mockCiphertext),
+      ciphertext: new Uint8Array(realCiphertext),
       iv: new Uint8Array(hexToBytes(nonceHex)),
       offsetBytes: 0
   };
