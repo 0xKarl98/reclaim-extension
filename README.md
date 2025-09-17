@@ -553,6 +553,3 @@ Cleanup completed, exiting...
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
----
-
-**🚀 Ready to build your privacy-preserving browser extension? Start by forking this template and customizing it for your use case!**
