@@ -512,94 +512,42 @@ chrome.runtime.sendMessage({
   error?: string
 }
 ```
+## 🧪 Testing
 
-## 🔒 Security & Privacy
+### Running Integration Tests
 
-- **Zero-Knowledge Proofs**: Data verification without exposure
-- **Local Processing**: Sensitive operations happen locally
-- **Minimal Permissions**: Only essential browser permissions requested
-- **Secure Storage**: Encrypted local storage for sensitive data
+To run the comprehensive Noir circuit integration tests:
 
-### Best Practices
+```bash
+node test-noir-integration.js
+```
 
-#### Security Guidelines
+**What this test covers:**
+- ✅ AES-128-CTR encryption and proof generation
+- ✅ AES-256-CTR encryption and proof generation  
+- ✅ ChaCha20 encryption and proof generation
+- ✅ Zero-knowledge proof verification for all algorithms
+- ✅ Circuit initialization and cleanup
 
-1. **Data Handling**:
-   - Never store sensitive data in plain text
-   - Use secure random number generation for cryptographic operations
-   - Implement proper input validation and sanitization
+**Expected output:**
+```
+Starting Noir integration test...
+Available circuits: [ 'aes_128_ctr', 'aes_256_ctr', 'chacha20' ]
 
-2. **Network Security**:
-   - Validate all network requests and responses
-   - Use HTTPS for all external communications
-   - Implement request rate limiting to prevent abuse
+=== Testing AES-128-CTR ===
+✓ AES-128-CTR test completed successfully!
 
-3. **Extension Security**:
-   - Follow principle of least privilege for permissions
-   - Sanitize all DOM interactions in content scripts
-   - Use Content Security Policy (CSP) headers
+=== Testing AES-256-CTR ===
+✓ AES-256-CTR test completed successfully!
 
-#### Performance Optimization
+=== Testing ChaCha20 ===
+✓ ChaCha20 test completed successfully!
 
-1. **Proof Generation**:
-   - Use Web Workers for heavy cryptographic operations
-   - Implement proof caching for repeated operations
-   - Optimize circuit parameters for faster execution
+All tests completed successfully!
+Cleanup completed, exiting...
+```
 
-2. **Memory Management**:
-   - Clean up unused circuit instances
-   - Implement proper garbage collection for large data structures
-   - Monitor memory usage in background scripts
-
-3. **Network Optimization**:
-   - Batch network requests when possible
-   - Implement request deduplication
-   - Use efficient data serialization formats
-
-## 🤝 Contributing to the Template
-
-We welcome contributions that improve the template for all developers:
-
-1. Fork the repository
-2. Create a feature branch
-3. Add comprehensive tests
-4. Update documentation
-5. Submit a pull request
-
-### Development Guidelines
-
-#### Code Style
-
-- Follow ESLint configuration provided in the template
-- Use TypeScript for type safety where applicable
-- Write comprehensive JSDoc comments for all public APIs
-- Follow consistent naming conventions across the codebase
-
-#### Testing Requirements
-
-- Write unit tests for all new functionality
-- Include integration tests for complex workflows
-- Test across multiple browser environments
-- Maintain minimum 80% code coverage
-
-#### Documentation Standards
-
-- Update README.md for any new features
-- Include inline code documentation
-- Provide usage examples for new APIs
-- Update architecture diagrams when needed
-
-## 📚 Resources & Documentation
-
-- [Reclaim Protocol Documentation](https://docs.reclaimprotocol.org)
-- [Browser Extension APIs](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions)
-- [snarkjs Documentation](https://github.com/iden3/snarkjs)
-
-## 🆘 Support & Community
-
-- **Issues**: [GitHub Issues](https://github.com/your-org/reclaim-extension-template/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-org/reclaim-extension-template/discussions)  
-- **Documentation**: [Full Documentation Site](https://docs.reclaimprotocol.org/extensions)
+> **Note:** The test automatically handles circuit cleanup and process termination. Each test generates real cryptographic proofs and verifies them using the Noir proving system.
 
 ## 📄 License
 
