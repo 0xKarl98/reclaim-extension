@@ -1,0 +1,304 @@
+{
+  "timestamp": "2024-01-15T10:30:45.123Z",
+  "configuration": {
+    "algorithms": ["aes-128-ctr", "aes-256-ctr", "chacha20"],
+    "dataSizes": [256, 1024, 4096, 16384],
+    "iterations": 50,
+    "warmupRounds": 5,
+    "concurrencyLevels": [1, 2, 4],
+    "timeout": 30000,
+    "memoryProfiling": true,
+    "outputFormat": "json"
+  },
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "nodeVersion": "v18.17.0",
+    "cpuCount": 8,
+    "totalMemory": 17179869184,
+    "hostname": "benchmark-machine"
+  },
+  "summary": {
+    "aes-128-ctr": {
+      "successRate": "98.50%",
+      "performance": {
+        "mean": "145.32ms",
+        "median": "142.18ms",
+        "p95": "189.45ms",
+        "min": "98.23ms",
+        "max": "234.67ms"
+      },
+      "memoryPeak": "42.3MB",
+      "rating": "Good"
+    },
+    "aes-256-ctr": {
+      "successRate": "97.25%",
+      "performance": {
+        "mean": "178.91ms",
+        "median": "175.34ms",
+        "p95": "231.78ms",
+        "min": "125.67ms",
+        "max": "289.12ms"
+      },
+      "memoryPeak": "48.7MB",
+      "rating": "Good"
+    },
+    "chacha20": {
+      "successRate": "99.00%",
+      "performance": {
+        "mean": "132.45ms",
+        "median": "129.87ms",
+        "p95": "167.23ms",
+        "min": "89.34ms",
+        "max": "201.56ms"
+      },
+      "memoryPeak": "39.8MB",
+      "rating": "Excellent"
+    }
+  },
+  "detailed": {
+    "aes-128-ctr": {
+      "statistics": {
+        "count": 200,
+        "min": 98.23,
+        "max": 234.67,
+        "mean": 145.32,
+        "median": 142.18,
+        "p95": 189.45,
+        "p99": 218.34
+      },
+      "byDataSize": {
+        "256": {
+          "mean": 98.45,
+          "median": 96.78,
+          "p95": 125.34,
+          "successRate": 100
+        },
+        "1024": {
+          "mean": 142.67,
+          "median": 139.23,
+          "p95": 178.45,
+          "successRate": 98
+        },
+        "4096": {
+          "mean": 167.89,
+          "median": 164.12,
+          "p95": 201.67,
+          "successRate": 97
+        },
+        "16384": {
+          "mean": 172.34,
+          "median": 169.78,
+          "p95": 208.91,
+          "successRate": 99
+        }
+      },
+      "concurrency": {
+        "1": {
+          "throughput": 6.89,
+          "avgLatency": 145.12
+        },
+        "2": {
+          "throughput": 12.34,
+          "avgLatency": 162.45
+        },
+        "4": {
+          "throughput": 21.67,
+          "avgLatency": 184.78
+        }
+      }
+    },
+    "aes-256-ctr": {
+      "statistics": {
+        "count": 195,
+        "min": 125.67,
+        "max": 289.12,
+        "mean": 178.91,
+        "median": 175.34,
+        "p95": 231.78,
+        "p99": 267.45
+      },
+      "byDataSize": {
+        "256": {
+          "mean": 134.23,
+          "median": 131.45,
+          "p95": 167.89,
+          "successRate": 100
+        },
+        "1024": {
+          "mean": 176.78,
+          "median": 173.12,
+          "p95": 218.34,
+          "successRate": 96
+        },
+        "4096": {
+          "mean": 198.45,
+          "median": 194.67,
+          "p95": 245.78,
+          "successRate": 95
+        },
+        "16384": {
+          "mean": 206.12,
+          "median": 202.89,
+          "p95": 254.23,
+          "successRate": 98
+        }
+      },
+      "concurrency": {
+        "1": {
+          "throughput": 5.59,
+          "avgLatency": 178.91
+        },
+        "2": {
+          "throughput": 9.87,
+          "avgLatency": 202.45
+        },
+        "4": {
+          "throughput": 16.23,
+          "avgLatency": 246.78
+        }
+      }
+    },
+    "chacha20": {
+      "statistics": {
+        "count": 198,
+        "min": 89.34,
+        "max": 201.56,
+        "mean": 132.45,
+        "median": 129.87,
+        "p95": 167.23,
+        "p99": 189.78
+      },
+      "byDataSize": {
+        "256": {
+          "mean": 92.67,
+          "median": 90.23,
+          "p95": 118.45,
+          "successRate": 100
+        },
+        "1024": {
+          "mean": 128.34,
+          "median": 125.78,
+          "p95": 159.12,
+          "successRate": 99
+        },
+        "4096": {
+          "mean": 149.78,
+          "median": 146.45,
+          "p95": 184.67,
+          "successRate": 98
+        },
+        "16384": {
+          "mean": 159.01,
+          "median": 155.89,
+          "p95": 194.23,
+          "successRate": 99
+        }
+      },
+      "concurrency": {
+        "1": {
+          "throughput": 7.55,
+          "avgLatency": 132.45
+        },
+        "2": {
+          "throughput": 13.89,
+          "avgLatency": 144.12
+        },
+        "4": {
+          "throughput": 24.67,
+          "avgLatency": 162.34
+        }
+      }
+    }
+  },
+  "memoryAnalysis": {
+    "aes-128-ctr": {
+      "baselineMemory": 28.5,
+      "peakMemory": 42.3,
+      "memoryGrowth": 13.8,
+      "gcEvents": 12,
+      "memoryEfficiency": "Good"
+    },
+    "aes-256-ctr": {
+      "baselineMemory": 29.1,
+      "peakMemory": 48.7,
+      "memoryGrowth": 19.6,
+      "gcEvents": 15,
+      "memoryEfficiency": "Acceptable"
+    },
+    "chacha20": {
+      "baselineMemory": 27.8,
+      "peakMemory": 39.8,
+      "memoryGrowth": 12.0,
+      "gcEvents": 10,
+      "memoryEfficiency": "Excellent"
+    }
+  },
+  "errors": [
+    {
+      "algorithm": "aes-128-ctr",
+      "dataSize": 4096,
+      "error": "Circuit compilation timeout",
+      "context": "proof_generation",
+      "timestamp": 1705315845123,
+      "frequency": 3
+    },
+    {
+      "algorithm": "aes-256-ctr",
+      "dataSize": 16384,
+      "error": "Memory allocation failed",
+      "context": "proof_generation",
+      "timestamp": 1705315867456,
+      "frequency": 5
+    },
+    {
+      "algorithm": "chacha20",
+      "dataSize": 1024,
+      "error": "Invalid input format",
+      "context": "input_validation",
+      "timestamp": 1705315889789,
+      "frequency": 2
+    }
+  ],
+  "recommendations": {
+    "immediate": [
+      {
+        "priority": "high",
+        "title": "Optimize AES-256-CTR Memory Usage",
+        "description": "Memory consumption for AES-256-CTR exceeds optimal thresholds",
+        "impact": "Reduce memory usage by 20-30%",
+        "effort": "Medium"
+      },
+      {
+        "priority": "medium",
+        "title": "Improve Error Handling",
+        "description": "Several timeout and memory allocation errors detected",
+        "impact": "Increase success rate to 99%+",
+        "effort": "Low"
+      }
+    ],
+    "longTerm": [
+      {
+        "priority": "low",
+        "title": "Implement Circuit Caching",
+        "description": "Cache compiled circuits to improve performance",
+        "impact": "Reduce compilation time by 50%+",
+        "effort": "High"
+      }
+    ]
+  },
+  "algorithmRanking": {
+    "bySpeed": ["chacha20", "aes-128-ctr", "aes-256-ctr"],
+    "byMemoryEfficiency": ["chacha20", "aes-128-ctr", "aes-256-ctr"],
+    "byReliability": ["chacha20", "aes-128-ctr", "aes-256-ctr"],
+    "overall": ["chacha20", "aes-128-ctr", "aes-256-ctr"]
+  },
+  "benchmarkMetadata": {
+    "version": "1.0.0",
+    "testDuration": 1847.5,
+    "totalOperations": 593,
+    "successfulOperations": 581,
+    "failedOperations": 12,
+    "overallSuccessRate": 97.98
+  }
+}

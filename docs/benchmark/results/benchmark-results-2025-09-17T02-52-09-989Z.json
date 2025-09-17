@@ -1,0 +1,287 @@
+{
+  "timestamp": "2025-09-17T02:52:09.987Z",
+  "summary": {
+    "aes-128-ctr": {
+      "successRate": "100.00%",
+      "performance": {
+        "mean": "758.57ms",
+        "median": "738.77ms",
+        "p95": "904.07ms",
+        "min": "714.41ms",
+        "max": "904.07ms"
+      }
+    },
+    "aes-256-ctr": {
+      "successRate": "100.00%",
+      "performance": {
+        "mean": "1228.63ms",
+        "median": "1229.29ms",
+        "p95": "1245.91ms",
+        "min": "1219.57ms",
+        "max": "1245.91ms"
+      }
+    },
+    "chacha20": {
+      "successRate": "100.00%",
+      "performance": {
+        "mean": "820.25ms",
+        "median": "819.85ms",
+        "p95": "843.06ms",
+        "min": "800.11ms",
+        "max": "843.06ms"
+      }
+    }
+  },
+  "detailed": {
+    "aes-128-ctr": {
+      "statistics": {
+        "count": 10,
+        "min": 714.4080000000001,
+        "max": 904.0685000000003,
+        "mean": 758.5677335000001,
+        "median": 738.7720839999997,
+        "p95": 904.0685000000003,
+        "p99": 904.0685000000003
+      },
+      "rawMetrics": [
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 714.4080000000001,
+          "success": true,
+          "timestamp": 1758077490370
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 718.2526250000001,
+          "success": true,
+          "timestamp": 1758077491100
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 736.5610419999998,
+          "success": true,
+          "timestamp": 1758077491848
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 738.7720839999997,
+          "success": true,
+          "timestamp": 1758077492598
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 734.693209,
+          "success": true,
+          "timestamp": 1758077493344
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 761.2761250000003,
+          "success": true,
+          "timestamp": 1758077494117
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 785.3990830000002,
+          "success": true,
+          "timestamp": 1758077494914
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 904.0685000000003,
+          "success": true,
+          "timestamp": 1758077495829
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 769.0647920000001,
+          "success": true,
+          "timestamp": 1758077496609
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 723.1818750000002,
+          "success": true,
+          "timestamp": 1758077497343
+        }
+      ]
+    },
+    "aes-256-ctr": {
+      "statistics": {
+        "count": 10,
+        "min": 1219.5705000000016,
+        "max": 1245.9069999999992,
+        "mean": 1228.6319626000002,
+        "median": 1229.288708,
+        "p95": 1245.9069999999992,
+        "p99": 1245.9069999999992
+      },
+      "rawMetrics": [
+        {
+          "algorithm": "aes-256-ctr",
+          "dataSize": 1024,
+          "duration": 1234.796042,
+          "success": true,
+          "timestamp": 1758077503224
+        },
+        {
+          "algorithm": "aes-256-ctr",
+          "dataSize": 1024,
+          "duration": 1221.0341660000013,
+          "success": true,
+          "timestamp": 1758077504457
+        },
+        {
+          "algorithm": "aes-256-ctr",
+          "dataSize": 1024,
+          "duration": 1230.0538749999978,
+          "success": true,
+          "timestamp": 1758077505698
+        },
+        {
+          "algorithm": "aes-256-ctr",
+          "dataSize": 1024,
+          "duration": 1245.9069999999992,
+          "success": true,
+          "timestamp": 1758077506955
+        },
+        {
+          "algorithm": "aes-256-ctr",
+          "dataSize": 1024,
+          "duration": 1219.5705000000016,
+          "success": true,
+          "timestamp": 1758077508186
+        },
+        {
+          "algorithm": "aes-256-ctr",
+          "dataSize": 1024,
+          "duration": 1225.2835840000007,
+          "success": true,
+          "timestamp": 1758077509423
+        },
+        {
+          "algorithm": "aes-256-ctr",
+          "dataSize": 1024,
+          "duration": 1220.353417000002,
+          "success": true,
+          "timestamp": 1758077510655
+        },
+        {
+          "algorithm": "aes-256-ctr",
+          "dataSize": 1024,
+          "duration": 1229.288708,
+          "success": true,
+          "timestamp": 1758077511895
+        },
+        {
+          "algorithm": "aes-256-ctr",
+          "dataSize": 1024,
+          "duration": 1228.0409169999984,
+          "success": true,
+          "timestamp": 1758077513135
+        },
+        {
+          "algorithm": "aes-256-ctr",
+          "dataSize": 1024,
+          "duration": 1231.991417000001,
+          "success": true,
+          "timestamp": 1758077514378
+        }
+      ]
+    },
+    "chacha20": {
+      "statistics": {
+        "count": 10,
+        "min": 800.1147920000003,
+        "max": 843.0565839999981,
+        "mean": 820.2544875999981,
+        "median": 819.8477500000008,
+        "p95": 843.0565839999981,
+        "p99": 843.0565839999981
+      },
+      "rawMetrics": [
+        {
+          "algorithm": "chacha20",
+          "dataSize": 1024,
+          "duration": 804.7872910000006,
+          "success": true,
+          "timestamp": 1758077520229
+        },
+        {
+          "algorithm": "chacha20",
+          "dataSize": 1024,
+          "duration": 813.8421669999989,
+          "success": true,
+          "timestamp": 1758077521054
+        },
+        {
+          "algorithm": "chacha20",
+          "dataSize": 1024,
+          "duration": 830.5750829999961,
+          "success": true,
+          "timestamp": 1758077521896
+        },
+        {
+          "algorithm": "chacha20",
+          "dataSize": 1024,
+          "duration": 817.4279999999999,
+          "success": true,
+          "timestamp": 1758077522725
+        },
+        {
+          "algorithm": "chacha20",
+          "dataSize": 1024,
+          "duration": 800.1147920000003,
+          "success": true,
+          "timestamp": 1758077523537
+        },
+        {
+          "algorithm": "chacha20",
+          "dataSize": 1024,
+          "duration": 816.6543749999983,
+          "success": true,
+          "timestamp": 1758077524364
+        },
+        {
+          "algorithm": "chacha20",
+          "dataSize": 1024,
+          "duration": 834.2016249999942,
+          "success": true,
+          "timestamp": 1758077525210
+        },
+        {
+          "algorithm": "chacha20",
+          "dataSize": 1024,
+          "duration": 822.0372089999946,
+          "success": true,
+          "timestamp": 1758077526043
+        },
+        {
+          "algorithm": "chacha20",
+          "dataSize": 1024,
+          "duration": 843.0565839999981,
+          "success": true,
+          "timestamp": 1758077526897
+        },
+        {
+          "algorithm": "chacha20",
+          "dataSize": 1024,
+          "duration": 819.8477500000008,
+          "success": true,
+          "timestamp": 1758077527728
+        }
+      ]
+    }
+  },
+  "errors": []
+}

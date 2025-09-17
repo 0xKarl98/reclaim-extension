@@ -529,6 +529,39 @@ node test-noir-integration.js
 - ✅ Zero-knowledge proof verification for all algorithms
 - ✅ Circuit initialization and cleanup
 
+### 📊 Performance Benchmarking
+
+For comprehensive performance analysis of Noir circuits:
+
+```bash
+# Quick performance check
+./docs/benchmark/run-benchmark.sh quick
+
+# Full comprehensive benchmark
+./docs/benchmark/run-benchmark.sh full
+
+# Algorithm-specific benchmark
+./docs/benchmark/run-benchmark.sh algorithm --algorithm aes-128-ctr
+
+# Memory stress test
+./docs/benchmark/run-benchmark.sh memory
+```
+
+**Benchmark features:**
+- 🚀 **Algorithm Comparison**: Performance analysis across AES-128-CTR, AES-256-CTR, and ChaCha20
+- 📈 **Scalability Testing**: Data size impact analysis (256B to 64KB)
+- 🧠 **Memory Profiling**: Peak memory usage and garbage collection analysis
+- ⚡ **Concurrency Testing**: Parallel processing performance evaluation
+- 📋 **Detailed Reports**: Comprehensive performance reports with recommendations
+- 🎯 **CI/CD Integration**: Automated performance regression detection
+
+**Performance thresholds:**
+- **Excellent**: < 100ms proof generation
+- **Good**: 100-500ms proof generation
+- **Acceptable**: 500ms-2s proof generation
+
+For detailed benchmark documentation, see [`docs/benchmark/README.md`](docs/benchmark/README.md).
+
 **Expected output:**
 ```
 Starting Noir integration test...

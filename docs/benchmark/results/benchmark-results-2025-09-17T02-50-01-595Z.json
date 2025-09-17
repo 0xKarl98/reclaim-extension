@@ -1,0 +1,101 @@
+{
+  "timestamp": "2025-09-17T02:50:01.593Z",
+  "summary": {
+    "aes-128-ctr": {
+      "successRate": "100.00%",
+      "performance": {
+        "mean": "728.68ms",
+        "median": "730.63ms",
+        "p95": "756.89ms",
+        "min": "707.77ms",
+        "max": "756.89ms"
+      }
+    }
+  },
+  "detailed": {
+    "aes-128-ctr": {
+      "statistics": {
+        "count": 10,
+        "min": 707.766083,
+        "max": 756.8879999999999,
+        "mean": 728.6836708999999,
+        "median": 730.6287499999999,
+        "p95": 756.8879999999999,
+        "p99": 756.8879999999999
+      },
+      "rawMetrics": [
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 718.6430420000002,
+          "success": true,
+          "timestamp": 1758077392871
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 740.132208,
+          "success": true,
+          "timestamp": 1758077393622
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 707.766083,
+          "success": true,
+          "timestamp": 1758077394341
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 714.3228329999997,
+          "success": true,
+          "timestamp": 1758077395067
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 756.8879999999999,
+          "success": true,
+          "timestamp": 1758077395835
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 730.6287499999999,
+          "success": true,
+          "timestamp": 1758077396576
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 709.7727089999998,
+          "success": true,
+          "timestamp": 1758077397298
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 740.5396249999994,
+          "success": true,
+          "timestamp": 1758077398049
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 730.3600419999993,
+          "success": true,
+          "timestamp": 1758077398791
+        },
+        {
+          "algorithm": "aes-128-ctr",
+          "dataSize": 1024,
+          "duration": 737.7834170000006,
+          "success": true,
+          "timestamp": 1758077399540
+        }
+      ]
+    }
+  },
+  "errors": []
+}
